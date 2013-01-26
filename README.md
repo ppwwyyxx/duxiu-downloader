@@ -17,6 +17,7 @@ dependencies:
 	node packages:
 		request
 		coffee
+		mime
 
 	ghostscript(gs)
 	imagemagick(convert)

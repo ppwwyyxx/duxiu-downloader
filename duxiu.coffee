@@ -1,10 +1,11 @@
 #!/home/wyx/.local/bin/coffee
 # File: duxiu.coffee
-# Date: Sun Jan 13 18:17:20 2013 +0800
+# Date: Sat Jan 26 15:42:19 2013 +0800
 # Author: Yuxin Wu <ppwwyyxxc@gmail.com>
 
 sprintf = require './sprintf'
 request = require 'request'
+mime = require 'mime'
 fs = require 'fs'
 
 args = process.argv.splice(2)
@@ -47,6 +48,10 @@ download = (options, n) ->
     fs.writeFile fname, body, (err) ->
       if err
         throw err
+      type = mime.lookup(fname)
+      if type.indexOf('image') == -1
+        console.log('retrying ' + n)
+        download options, n
       console.log("finish " + n)
 
 request option, (err, res, body) ->
