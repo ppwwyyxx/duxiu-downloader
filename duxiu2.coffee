@@ -1,6 +1,6 @@
 #!/home/wyx/.local/bin/coffee
-# File: duxiu.coffee
-# Date: Fri Mar 01 13:39:38 2013 +0800
+# File: duxiu2.coffee
+# Date: Sat May 11 17:52:00 2013 +0800
 # Author: Yuxin Wu <ppwwyyxxc@gmail.com>
 
 sprintf = require './sprintf'
@@ -10,35 +10,18 @@ fs = require 'fs'
 
 args = process.argv.splice(2)
 
-referer = args[0]
+url = args[0]
 savepath = args[1]
 
-realurl = referer.replace('DrsPath.do', '/n/drspath.shtml')
-
-startPos = referer.match(/spagenum/).index
-startPos += 9
-endPos = referer.indexOf('&', startPos)
-startPage = referer.substr(startPos, endPos - startPos)
-startPage = parseInt(startPage)
-
-startPos = referer.match(/pages/).index
-startPos += 6
-endPos = referer.indexOf('&', startPos)
-pages = referer.substr(startPos, endPos - startPos)
-pages = parseInt(pages)
-endPage = startPage + pages - 1
-
-console.log(startPage, endPage)
-
-startPos = referer.match(/www/).index
-endPos = referer.indexOf('/', startPos)
-host = referer.substr(startPos, endPos - startPos)
+startPos = url.match(/www/).index
+endPos = url.indexOf('/', startPos)
+host = url.substr(startPos, endPos - startPos)
 
 console.log("host: " + host)
-console.log("referer: " + referer)
+console.log("url: " + url)
 
 option =
-  url: realurl
+  url: url
   headers:
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
     'Accpet-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3'
@@ -46,20 +29,32 @@ option =
     'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.21 (KHTML, like Gecko) Chrome/25.0.1354.0 Safari/537.21'
 
 download = (options, n) ->
-  fname = savepath + '/' + sprintf("%03d", n) + '.jpg'
+  fname = savepath + '/' + sprintf("%03d", n) + '.png'
   request options, (err, res, body) ->
     if err
       console.log("---NetWork Error!---")
       console.log(err)
-    #console.log(body)
+
     fs.writeFile fname, body, (err) ->
       if err
-        console.log(err)
+        console.log("Error: " + err)
       type = mime.lookup(fname)
       if type.indexOf('image') == -1
         console.log('retrying ' + n)
         download options, n
       console.log("finish " + n)
+
+
+preDownload = (options, n) ->
+  request options, (err, res, body) ->
+    opt =
+      url: res.headers['location']
+      headers:
+        'Referer': url
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.21 (KHTML, like Gecko) Chrome/25.0.1354.0 Safari/537.21'
+      encoding: null
+
+    download opt, n
 
 request option, (err, res, body) ->
   cookie = res.headers['set-cookie'][0].split(' ')[0]
@@ -69,19 +64,33 @@ request option, (err, res, body) ->
   startPos += 11
   endPos = body.indexOf(';', startPos) - 1
   picurl = body.substr(startPos, endPos - startPos)
+  console.log("var str = " + picurl)
 
-  url = 'http://' + host + '/n/' + picurl
-  console.log(url)
+  startPos = body.match(/var spage = /).index
+  startPos += 12
+  endPos = body.indexOf(',', startPos)
+  startPage = body.substr(startPos, endPos - startPos)
+  startPage = parseInt(startPage)
 
-  for n in [startPage..endPage]
+  startPos = body.match(/, epage = /).index
+  startPos += 10
+  endPos = body.indexOf(';', startPos)
+  endPage = body.substr(startPos, endPos - startPos)
+  endPage = parseInt(endPage)
+  console.log("Page: " + startPage + " " + endPage)
+
+  downurl = 'http://' + host + '/n/' + picurl
+  console.log(downurl)
+
+  for x in [startPage..endPage]
     options =
-      url: url + sprintf("%06d", n) + "?.&uf=ssr&zoom=0"
+      url: downurl + sprintf("%06d", x) + "?.&uf=ssr&zoom=0"
       headers:
         'Cookie': cookie
-        #'Host': host
-        'Referer': referer
+        'Host': host
+        'Referer': url
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.21 (KHTML, like Gecko) Chrome/25.0.1354.0 Safari/537.21'
       encoding: null
+      followRedirect: false
 
-    download options, n
-
+    preDownload options, x
