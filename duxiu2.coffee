@@ -1,6 +1,6 @@
-#!/home/wyx/.local/bin/coffee
+#!/usr/bin/env coffee
 # File: duxiu2.coffee
-# Date: Sat May 11 17:52:00 2013 +0800
+# Date: Wed May 15 08:50:12 2013 +0800
 # Author: Yuxin Wu <ppwwyyxxc@gmail.com>
 
 sprintf = require './sprintf'
