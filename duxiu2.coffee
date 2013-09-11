@@ -1,6 +1,6 @@
 #!/usr/bin/env coffee
 # File: duxiu2.coffee
-# Date: Wed May 15 08:50:12 2013 +0800
+# Date: Thu Sep 12 00:00:45 2013 +0800
 # Author: Yuxin Wu <ppwwyyxxc@gmail.com>
 
 sprintf = require './sprintf'
@@ -31,9 +31,14 @@ option =
 download = (options, n) ->
   fname = savepath + '/' + sprintf("%03d", n) + '.png'
   request options, (err, res, body) ->
-    if err
+    if err or not body or body.length == 0 or body == "undefined"
+      if not err
+        console.log "empty body! retrying.."
       console.log("---NetWork Error!---")
       console.log(err)
+      console.log("retrying " + n)
+      download options, n
+      return
 
     fs.writeFile fname, body, (err) ->
       if err

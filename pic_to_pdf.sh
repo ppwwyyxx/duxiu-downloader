@@ -1,6 +1,6 @@
 #!/bin/bash
 # File: pic_to_pdf.sh
-# Date: Sun May 19 01:25:38 2013 +0800
+# Date: Wed May 22 16:05:01 2013 +0800
 # Author: Yuxin Wu <ppwwyyxxc@gmail.com>
 
 if [[ -z "$1" ]]; then
@@ -20,7 +20,7 @@ rename .png .jpg $1/*.png
 FILES=`find $1 -type f -name "*.jpg"`
 mkdir $TMP -p
 cd $1
-parallel -P 10 convert {} {.}.pdf ::: *.jpg
+parallel -P 20 convert {} {.}.pdf ::: *.jpg
 #parallel -P 20 convert {} {.}.tiff ::: *.jpg
 #parallel -P 20 tiff2pdf {} -o {.}.pdf ::: *.tiff
 mv ./*.pdf ../$TMP/
