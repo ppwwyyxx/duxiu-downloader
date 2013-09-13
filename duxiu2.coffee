@@ -1,6 +1,6 @@
 #!/usr/bin/env coffee
 # File: duxiu2.coffee
-# Date: Thu Sep 12 00:00:45 2013 +0800
+# Date: Thu Sep 12 00:11:02 2013 +0800
 # Author: Yuxin Wu <ppwwyyxxc@gmail.com>
 
 sprintf = require './sprintf'
@@ -12,6 +12,12 @@ args = process.argv.splice(2)
 
 url = args[0]
 savepath = args[1]
+
+startPage = endPage = 0
+if args[2] and args[3]
+  startPage = args[2]
+  endPage = args[3]
+
 
 startPos = url.match(/www/).index
 endPos = url.indexOf('/', startPos)
@@ -71,17 +77,19 @@ request option, (err, res, body) ->
   picurl = body.substr(startPos, endPos - startPos)
   console.log("var str = " + picurl)
 
-  startPos = body.match(/var spage = /).index
-  startPos += 12
-  endPos = body.indexOf(',', startPos)
-  startPage = body.substr(startPos, endPos - startPos)
-  startPage = parseInt(startPage)
+  if not startPage and not endPage
+    startPos = body.match(/var spage = /).index
+    startPos += 12
+    endPos = body.indexOf(',', startPos)
+    startPage = body.substr(startPos, endPos - startPos)
+    startPage = parseInt(startPage)
 
-  startPos = body.match(/, epage = /).index
-  startPos += 10
-  endPos = body.indexOf(';', startPos)
-  endPage = body.substr(startPos, endPos - startPos)
-  endPage = parseInt(endPage)
+    startPos = body.match(/, epage = /).index
+    startPos += 10
+    endPos = body.indexOf(';', startPos)
+    endPage = body.substr(startPos, endPos - startPos)
+    endPage = parseInt(endPage)
+
   console.log("Page: " + startPage + " " + endPage)
 
   downurl = 'http://' + host + '/n/' + picurl
