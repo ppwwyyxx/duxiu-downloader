@@ -1,6 +1,6 @@
 #!/usr/bin/env coffee
 # File: duxiu.coffee
-# Date: Thu Oct 17 20:41:35 2013 +0800
+# Date: Thu Oct 17 21:06:37 2013 +0800
 # Author: Yuxin Wu <ppwwyyxxc@gmail.com>
 
 sprintf = require './sprintf'
@@ -58,9 +58,6 @@ preDownload = (options, n) ->
 
     opt =
       url: res.headers['location']
-      headers:
-        'Referer': url
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.66 Safari/537.36'
       encoding: null
 
     download opt, n
@@ -75,14 +72,15 @@ option =
     'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.66 Safari/537.36'
 
 request option, (err, res, body) ->
-  cookie = ""
-  for i in res.headers['set-cookie']
-    cookie += i.split(' ')[0] + ' '
+  if not cookie
+    for i in res.headers['set-cookie']
+      cookie += i.split(' ')[0] + ' '
   console.log("Cookie:" + cookie)
 
   startPos = body.match(/var str = "/).index + 11
   endPos = body.indexOf(';', startPos) - 1
-  picurl = body.substr(startPos, endPos - startPos)
+  if not picurl
+    picurl = body.substr(startPos, endPos - startPos)
   console.log("Get picurl: var str = " + picurl)
 
   if not startPage and not endPage
@@ -103,8 +101,11 @@ request option, (err, res, body) ->
 
   for x in [startPage..endPage]
     options =
-      url: downurl + sprintf("%06d", x) + "?.&uf=ssr&zoom=2&pi=2"
+      url: downurl + sprintf("%06d", x) + "?.&uf=ssr&zoom=2"
       headers:
+        'Accept': 'image/webp,*/*;q=0.8'
+        'Accpet-Encoding': 'gzip,deflate,sdch'
+        'Connection': 'keep-alive'
         'Cookie': cookie
         'Host': host
         'Referer': url
