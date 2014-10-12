@@ -1,26 +1,29 @@
 #!/usr/bin/env coffee
 # File: duxiu.coffee
-# Date: Thu Oct 17 21:06:37 2013 +0800
+# Date: Wed Mar 12 21:02:04 2014 +0800
 # Author: Yuxin Wu <ppwwyyxxc@gmail.com>
 
 sprintf = require './sprintf'
 request = require 'request'
-mime = require 'mime'
 fs = require 'fs'
+spawn = require('child_process').spawn
 
 args = process.argv.splice(2)
 
 url = args[0]
 savepath = args[1]
+if not savepath
+  console.log 'Please enter savepath'
 
 startPage = endPage = 0
 if args[2] and args[3]
-  startPage = args[2]
-  endPage = args[3]
+  startPage = Number args[2]
+  endPage = Number args[3]
 
 # to manually download sth
 cookie = ""
 picurl = ""
+give_up_list = []
 
 
 startPos = url.match(/www/).index
@@ -29,7 +32,7 @@ host = url.substr(startPos, url.indexOf('/', startPos) - startPos)
 console.log("\nhost: " + host)
 console.log("url: " + url)
 
-download = (options, n) ->
+download = (options, n, depth = 0) ->
   fname = savepath + '/' + sprintf("%03d", n) + '.png'
   request options, (err, res, body) ->
     if err or not body or body.length == 0 or body == "undefined"
@@ -38,15 +41,22 @@ download = (options, n) ->
       console.log("---NetWork Error!---")
       console.log(err)
       console.log("retrying " + n)
-      download options, n
+      download options, n, depth
       return
 
     fs.writeFile fname, body, (err) ->
-      type = mime.lookup(fname)
-      if type.indexOf('image') == -1
-        console.log('Type not match! Retrying ' + n)
-        download options, n
-      console.log("finish " + n)
+      type = spawn('file', [fname])
+      type.stdout.on 'data', (data) ->
+        data = String data
+        if data.indexOf('image') == -1
+          if depth < 3
+            console.log 'Type not match! Retrying ' + n
+            download options, n, depth + 1
+          else
+            console.log 'Type mismatches, give up:::--->' + n
+            give_up_list.push(n)
+        else
+          console.log("finish " + n)
 
 
 preDownload = (options, n) ->

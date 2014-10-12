@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
-# File: bookmark_shift.py
-# Date: Sat Nov 23 15:09:38 2013 +0800
+# File: bookmarks.py
+# Date: Sat Nov 23 15:21:34 2013 +0800
 # Author: Yuxin Wu <ppwwyyxxc@gmail.com>
 
 import re
