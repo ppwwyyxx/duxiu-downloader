@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
 # File: duxiu.py
-# Date: Sun Oct 12 17:08:00 2014 +0800
+# Date: Sun Oct 12 17:18:57 2014 +0800
 # Author: Yuxin Wu <ppwwyyxxc@gmail.com>
 
 import requests
@@ -16,8 +16,6 @@ from multiprocessing import Pool
 from subprocess import Popen, PIPE
 
 global dir
-global failed
-failed = []
 
 REGEX_PAT = re.compile(
 '''var str = "(?P<picurl>[^"]*)";.*
@@ -33,6 +31,7 @@ def check_img(fname):
     return True
 
 def downloadPage(page_num, depth=0):
+    """ return a status"""
     fail = False
     tail = '{0:06d}?.&uf=ssr'.format(page_num)
     req_url = downurl + tail
@@ -52,10 +51,10 @@ def downloadPage(page_num, depth=0):
     if fail:
         if depth > 3:
             print "Give up", page_num
-            failed.append(page_num)
+            return False
         else:
             print "Retry", page_num
-            downloadPage(page_num, depth + 1)
+            return downloadPage(page_num, depth + 1)
 
 def main():
     global dir
@@ -81,21 +80,23 @@ def main():
 
     startPage = int(startPage)
     endPage = int(endPage)
+    pages = range(startPage, endPage + 1)
 
     if len(sys.argv) > 3:
-        startPage = int(sys.argv[3])
-        endPage = int(sys.argv[4])
+        pages = eval(sys.argv[3])
+        #startPage = int(sys.argv[3])
+        #endPage = int(sys.argv[4])
 
     global downurl
     downurl = 'http://{0}{1}'.format(host, picUrl)
     print "DownUrl: ", downurl
-    print "{0} --> {1:d}".format(startPage, endPage)
+    print "pages: ", pages
 
     #downloadPage(1)
 
     pool = Pool(10)
-    pool.map(downloadPage, range(startPage, endPage + 1))
-    print "Failed:", failed
+    rst = pool.map(downloadPage, pages)
+    print "Failed: ", [x[0] for x in zip(pages, rst) if x[1] == False]
 
 if __name__ == '__main__':
     main()
