@@ -8,16 +8,16 @@ usage:
 	get the link of available pages through '图书馆文献传递'
 
 	$ mkdir book
-	$ coffee duxiu.coffee <link> ./book
+	$ ./duxiu.py <link> ./book
 	$ ./pic_to_pdf.sh
 
 
 dependencies:
 ============
-	node packages:
-		request
-		coffee
-		mime
+pip packages:
++ beautifulsoup
++ requests
 
-	ghostscript(gs)
-	imagemagick(convert)
+system packages:
++ ghostscript(gs)
++ imagemagick(convert)
