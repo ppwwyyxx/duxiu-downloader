@@ -5,7 +5,8 @@ introduction:
 
 usage:
 =====
-	get the link of available pages through '图书馆文献传递'
+	Get the link of available pages through '图书馆文献传递'.
+	You will receive emails with the link after sending the book request at duxiu.com.
 
 	$ mkdir book
 	$ ./duxiu.py <link> ./book
